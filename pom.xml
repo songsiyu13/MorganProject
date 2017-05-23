@@ -29,6 +29,19 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- 添加jstl依赖 -->
+    <dependency>
+      <groupId>jstl</groupId>
+      <artifactId>jstl</artifactId>
+      <version>1.2</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax</groupId>
+      <artifactId>javaee-api</artifactId>
+      <version>7.0</version>
+    </dependency>
+
     <!--spring 相关-->
     <dependency>
       <groupId>org.springframework</groupId>
