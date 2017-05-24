@@ -14,6 +14,16 @@ public class Order {
     private int quantity;
     private String companyName;
 
+    public Order(OrderMessage orderMessage)
+    {
+        orderType = orderMessage.getType();
+        goodsName = orderMessage.getCommodity().getName();
+        goodsDate = orderMessage.getCommodity().getTime().toString();
+        price =  new BigDecimal(orderMessage.getCommodity().getPrice());
+        quantity = orderMessage.getCommodity().getNumber();
+        companyName = orderMessage.getCompany_name();
+    }
+
     public int getorderID(){return orderID;}
     public int getOrderType(){return orderType;}
     public String getGoodsName(){return goodsName;}

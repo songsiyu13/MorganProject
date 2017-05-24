@@ -7,4 +7,19 @@
     <insert id="add" parameterType="com.entity.Order">
         insert into sellorder(orderType,goodsName,goodsDate,price,quantity,companyName) values(#{orderType},#{goodsName},#{goodsDate},#{price},#{quantity},#{companyName})
     </insert>
+
+    <resultMap type="com.entity.Order" id="orderMap">
+        <id column="sellOrderID" property="orderID"/>
+        <result column="orderType" property="orderType"/>
+        <result column="goodsName" property="goodsName"/>
+        <result column="goodsDate" property="goodsDate"/>
+        <result column="price" property="price"/>
+        <result column="quantity" property="quantity"/>
+        <result column="companyName" property="companyName"/>
+        <!-- <association property="" column=""></association> -->
+    </resultMap>
+
+    <select id="queryNoPendingOrder" resultType="com.entity.Order">
+        select sellorder.sellOrderID,orderType,goodsName,goodsDate,price,sellorder.quantity,companyName from sellorder LEFT JOIN orderitem on sellorder.sellOrderID = orderitem.sellOrderID WHERE orderitem.orderItemID is NULL;
+    </select>
 </mapper>
