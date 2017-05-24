@@ -41,6 +41,11 @@
       <artifactId>javaee-api</artifactId>
       <version>7.0</version>
     </dependency>
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>jsr250-api</artifactId>
+      <version>1.0</version>
+    </dependency>
 
     <!--spring 相关-->
     <dependency>
@@ -83,6 +88,11 @@
       <artifactId>spring-context-support</artifactId>
       <version>${spring.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-jms</artifactId>
+      <version>${spring.version}</version>
+    </dependency>
 
 
     <!-- 添加mybatis依赖 -->
@@ -111,6 +121,13 @@
       <groupId>commons-dbcp</groupId>
       <artifactId>commons-dbcp</artifactId>
       <version>1.2.2</version>
+    </dependency>
+
+    <!--activemq 相关包-->
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>activemq-core</artifactId>
+      <version>5.7.0</version>
     </dependency>
   </dependencies>
   <build>
