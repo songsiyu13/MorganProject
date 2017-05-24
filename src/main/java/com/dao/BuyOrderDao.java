@@ -1,6 +1,6 @@
 package com.dao;
 
-import com.entity.BuyOrder;
+import com.entity.Order;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository(value = "buyOrderDao")
 public interface BuyOrderDao {
-    void add(BuyOrder buyOrder);
+    void add(Order buyOrder);
 }

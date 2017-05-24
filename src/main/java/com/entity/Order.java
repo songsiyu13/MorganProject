@@ -3,10 +3,10 @@ package com.entity;
 import java.math.BigDecimal;
 
 /**
- * Created by 滩涂上的芦苇 on 2017/5/23.
+ * Created by 滩涂上的芦苇 on 2017/5/24.
  */
-public class BuyOrder {
-    private int buyOrderID;
+public class Order {
+    private int orderID;
     private int orderType;
     private String goodsName;
     private String goodsDate;
@@ -14,7 +14,7 @@ public class BuyOrder {
     private int quantity;
     private String companyName;
 
-    public int getBuyOrderID(){return buyOrderID;}
+    public int getorderID(){return orderID;}
     public int getOrderType(){return orderType;}
     public String getGoodsName(){return goodsName;}
     public String getGoodsDate(){return goodsDate;}
@@ -22,7 +22,7 @@ public class BuyOrder {
     public int getQuantity(){return quantity;}
     public String getCompanyName(){return companyName;}
 
-    public void setBuyOrderID(int buyOrderID){this.buyOrderID = buyOrderID;}
+    public void setorderID(int orderID){this.orderID = orderID;}
     public void setOrderType(int orderType){this.orderType = orderType;}
     public void setGoodsName(String goodsName){this.goodsName = goodsName;}
     public void setGoodsDate(String goodsDate){this.goodsDate = goodsDate;}
