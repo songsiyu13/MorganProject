@@ -10,6 +10,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
+import java.math.BigDecimal;
 
 /**
  * Created by 滩涂上的芦苇 on 2017/5/24.
@@ -30,6 +31,7 @@ public class ConsumerMessageListener implements MessageListener {
             if(orderMessage.getS_type() == 0)
             {
                 //buy
+                if(orderMessage.getS_type() == 0) order.setPrice(new BigDecimal(Long.MAX_VALUE));
                 orderPool.newBuyOrder(order,orderMessage.getS_type());
             }
             else

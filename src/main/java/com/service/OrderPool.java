@@ -6,6 +6,7 @@ import com.entity.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -13,6 +14,7 @@ import java.util.*;
  * Created by 滩涂上的芦苇 on 2017/5/24.
  */
 @Service
+@Transactional
 public class OrderPool {
     private BuyOrderDao buyOrderDao;
     private SellOrderDao sellOrderDao;
@@ -20,7 +22,7 @@ public class OrderPool {
     private Map<String,Map<BigDecimal,List<Order>>> buyOrderPool;
     private Map<String,Map<BigDecimal,List<Order>>> sellOrderPool;
 
-    private void initPool(Map<String,Map<BigDecimal,List<Order>>> pool,Order order)
+    private void insertPool(Map<String,Map<BigDecimal,List<Order>>> pool,Order order)
     {
         String str = order.getGoodsName().concat(order.getGoodsDate());
         Map<BigDecimal,List<Order>>goodOrderPool = pool.get(str);
@@ -53,39 +55,50 @@ public class OrderPool {
         buyOrderPool = new HashMap<String, Map<BigDecimal, List<Order>>>();
         for (Order order:orderList
              ) {
-            initPool(buyOrderPool,order);
+            insertPool(buyOrderPool,order);
         }
         orderList = this.sellOrderDao.queryNoPendingOrder();
         sellOrderPool = new HashMap<String, Map<BigDecimal, List<Order>>>();
         for (Order order:orderList
              ) {
-            initPool(sellOrderPool,order);
+            insertPool(sellOrderPool,order);
         }
     }
 
+
     public void newBuyOrder(Order buyOrder,int type)
     {
-        switch (type)
+        buyOrderDao.add(buyOrder);
+        buyOrder.setorderID(buyOrderDao.getMaxID());
+        String str = buyOrder.getGoodsName().concat(buyOrder.getGoodsDate());
+        Map<BigDecimal,List<Order>>goodOrderPool = buyOrderPool.get(str);
+        if(goodOrderPool != null)
         {
-            case 0:
+            switch (type)
             {
-                //market order
-                break;
+                case 0:
+                {
+                    //market order
+                    break;
+                }
+                case 1:
+                {
+                    //limit order
+                    break;
+                }
+                case 2:
+                {
+                    //stop order
+                    break;
+                }
+                case 3:
+                {
+                    //stop order
+                }
             }
-            case 1:
-            {
-                //limit order
-                break;
-            }
-            case 2:
-            {
-                //stop order
-                break;
-            }
-            case 3:
-            {
-                //stop order
-            }
+        }
+        else{
+            insertPool(buyOrderPool,buyOrder);
         }
     }
 }
