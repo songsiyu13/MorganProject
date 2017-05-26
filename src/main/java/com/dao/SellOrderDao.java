@@ -12,4 +12,5 @@ import java.util.List;
 public interface SellOrderDao {
     public void add(Order sellOrder);
     List<Order> queryNoPendingOrder();
+    int getMaxID();
 }

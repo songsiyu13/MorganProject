@@ -22,4 +22,8 @@
     <select id="queryNoPendingOrder" resultType="com.entity.Order">
         select sellorder.sellOrderID,orderType,goodsName,goodsDate,price,sellorder.quantity,companyName from sellorder LEFT JOIN orderitem on sellorder.sellOrderID = orderitem.sellOrderID WHERE orderitem.orderItemID is NULL;
     </select>
+
+    <select id="getMaxID" resultType="int">
+        SELECT MAX (sellOrderID) FROM sellorder;
+    </select>
 </mapper>
