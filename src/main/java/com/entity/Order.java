@@ -14,6 +14,10 @@ public class Order {
     private int quantity;
     private String companyName;
 
+    public Order(){
+
+    }
+
     public Order(OrderMessage orderMessage)
     {
         orderType = orderMessage.getType();
