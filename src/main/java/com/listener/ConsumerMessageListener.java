@@ -1,21 +1,16 @@
 package com.listener;
 
-import com.entity.Order;
-import com.entity.OrderMessage;
 import com.service.OrderPool;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.ObjectMessage;
-import java.math.BigDecimal;
 
 /**
  * Created by 滩涂上的芦苇 on 2017/5/24.
  */
-@Component
 public class ConsumerMessageListener implements MessageListener {
     private OrderPool orderPool;
 
@@ -26,18 +21,20 @@ public class ConsumerMessageListener implements MessageListener {
     {
         ObjectMessage o = (ObjectMessage)message;
         try {
-            OrderMessage orderMessage = (OrderMessage) o.getObject();
-            Order order = new Order(orderMessage);
-            if(orderMessage.getS_type() == 0)
-            {
-                //buy
-                orderPool.newBuyOrder(order,orderMessage.getS_type());
-            }
-            else
-            {
-                //sell
-                orderPool.newSellOrder(order,orderMessage.getS_type());
-            }
+            String str = (String) o.getObject();
+            System.out.print(str);
+//            OrderMessage orderMessage = (OrderMessage) o.getObject();
+//            Order order = new Order(orderMessage);
+//            if(orderMessage.getS_type() == 0)
+//            {
+//                //buy
+//                orderPool.newBuyOrder(order,orderMessage.getS_type());
+//            }
+//            else
+//            {
+//                //sell
+//                orderPool.newSellOrder(order,orderMessage.getS_type());
+//            }
         } catch (JMSException e) {
             e.printStackTrace();
         }
