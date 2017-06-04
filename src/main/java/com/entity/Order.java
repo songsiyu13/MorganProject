@@ -1,6 +1,7 @@
 package com.entity;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 
 /**
  * Created by 滩涂上的芦苇 on 2017/5/24.
@@ -22,7 +23,7 @@ public class Order {
     {
         orderType = orderMessage.getType();
         goodsName = orderMessage.getCommodity().getName();
-        goodsDate = orderMessage.getCommodity().getTime().toString();
+        goodsDate = (new SimpleDateFormat("yyyy-MM-dd")).format(orderMessage.getCommodity().getTime());
         price =  new BigDecimal(orderMessage.getCommodity().getPrice());
         quantity = orderMessage.getCommodity().getNumber();
         companyName = orderMessage.getCompany_name();

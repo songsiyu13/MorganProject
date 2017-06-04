@@ -11,7 +11,7 @@ import java.io.Serializable;
  *
  * @author lycronaldo
  */
-public class marketCommodity implements Serializable{
+public class MarketCommodity implements Serializable{
     
     // 商品类
     private Commodity commodity;

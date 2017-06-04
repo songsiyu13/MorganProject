@@ -13,17 +13,11 @@ import javax.jms.Destination;
  */
 @Controller
 public class Welcome {
-    @Autowired
-    private BrokerSender brokerSender;
-    @Autowired
-    @Qualifier("queueDestination")
-    private Destination destination;
 
     @RequestMapping("/")
 
     public String welcome()
     {
-        brokerSender.sendMessage(destination,"111");
         return "index";
     }
 }

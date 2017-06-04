@@ -14,13 +14,14 @@ import javax.jms.Message;
 import javax.jms.Session;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 
 /**
  *
  * @author lycronaldo
  */
-@Controller
+@Component
 public class BrokerSender{
     private JmsTemplate jmsTemplate;
     @Resource

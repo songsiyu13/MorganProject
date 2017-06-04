@@ -3,13 +3,17 @@ package com.service;
 import com.dao.BuyOrderDao;
 import com.dao.OrderItemDao;
 import com.dao.SellOrderDao;
-import com.entity.Order;
-import com.entity.OrderItem;
+import com.entity.*;
+import com.producer.BrokerSender;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import javax.jms.Destination;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -18,6 +22,12 @@ import java.util.*;
 @Service
 @Transactional
 public class OrderPool {
+    @Autowired
+    private BrokerSender brokerSender;
+    @Autowired
+    @Qualifier("queueDestination")
+    private Destination destination;
+
     private BuyOrderDao buyOrderDao;
     private SellOrderDao sellOrderDao;
     private OrderItemDao orderItemDao;
@@ -232,10 +242,18 @@ public class OrderPool {
         }
     }
 
-    public void newBuyOrder(Order buyOrder,int type)
+    public void newBuyOrder(Order buyOrder,int type, int traderID)
     {
         buyOrderDao.add(buyOrder);
         buyOrder.setorderID(buyOrderDao.getMaxID());
+
+        //---------------------send Message--------------------------
+        OrderAcknowledge orderAcknowledge = new OrderAcknowledge();
+        orderAcknowledge.setBrokerId(buyOrder.getorderID());
+        orderAcknowledge.setBrokerId(traderID);
+        brokerSender.sendMessage(destination,orderAcknowledge);
+        //---------------------send Message--------------------------
+
         String goods = buyOrder.getGoodsName().concat(buyOrder.getGoodsDate());
         Map<BigDecimal,List<Order>>goodOrderPool = buyLimitOrderPool.get(goods);
         switch (type)
@@ -243,20 +261,13 @@ public class OrderPool {
             case 0:
             {
                 //market order
-                if(processMarketOrder(buyOrder,sellLimitOrderPool,sellMarketOrderPool,true))
-                {
-                    //to let trader know
-                }
+                processMarketOrder(buyOrder,sellLimitOrderPool,sellMarketOrderPool,true);
                 break;
             }
             case 1:
             {
                 //limit order
-                if(processLimitOrder(buyOrder,sellLimitOrderPool,sellMarketOrderPool,true))
-                {
-                    //to let trader know
-                }
-                else
+                if(!processLimitOrder(buyOrder,sellLimitOrderPool,sellMarketOrderPool,true))
                 {
                     stopOrderTrigger(goods,buyMarketOrderPool,buyLimitOrderPool,buyStopOrderPool,buyCompare);
                     processMarketOrderInPool(goods,buyMarketOrderPool,true);
@@ -284,10 +295,19 @@ public class OrderPool {
         }
     }
 
-    public void newSellOrder(Order sellOrder,int type)
+    public void newSellOrder(Order sellOrder,int type, int traderID)
     {
         sellOrderDao.add(sellOrder);
         sellOrder.setorderID(sellOrderDao.getMaxID());
+
+        //---------------------send Message--------------------------
+        OrderAcknowledge orderAcknowledge = new OrderAcknowledge();
+        orderAcknowledge.setBrokerId(sellOrder.getorderID());
+        orderAcknowledge.setBrokerId(traderID);
+        brokerSender.sendMessage(destination,orderAcknowledge);
+        //---------------------send Message--------------------------
+
+
         String goods = sellOrder.getGoodsName().concat(sellOrder.getGoodsDate());
         Map<BigDecimal,List<Order>>goodOrderPool = sellLimitOrderPool.get(goods);
         switch (type)
@@ -295,20 +315,13 @@ public class OrderPool {
             case 0:
             {
                 //market order
-                if(processMarketOrder(sellOrder,buyLimitOrderPool,buyMarketOrderPool,false))
-                {
-                    //to let trader know
-                }
+                processMarketOrder(sellOrder,buyLimitOrderPool,buyMarketOrderPool,false);
                 break;
             }
             case 1:
             {
                 //limit order
-                if(processLimitOrder(sellOrder,buyLimitOrderPool,buyMarketOrderPool,false))
-                {
-                    //to let trader know
-                }
-                else
+                if(!processLimitOrder(sellOrder,buyLimitOrderPool,buyMarketOrderPool,false))
                 {
                     stopOrderTrigger(goods,sellMarketOrderPool,sellLimitOrderPool,sellStopOrderPool,sellCompare);
                     processMarketOrderInPool(goods,sellMarketOrderPool,false);
@@ -394,6 +407,7 @@ public class OrderPool {
                      *
                      *
                      */
+                    broadcastOrders(order2,!isBuyOrder);
                     if(limit) popLimitOrder(limitOrders);
                     else marketOrders.remove(0);
                 }
@@ -405,6 +419,7 @@ public class OrderPool {
             insertMarketPool(goods,marketPool,order1);
             return false;
         }
+        broadcastOrders(order1,isBuyOrder);
         return true;
     }
 
@@ -467,6 +482,7 @@ public class OrderPool {
                      *
                      *
                      */
+                    broadcastOrders(order2,!isBuyOrder);
                     if(limit) popLimitOrder(limitOrders);
                     else marketOrders.remove(0);
                 }
@@ -478,6 +494,7 @@ public class OrderPool {
             insertLimitPool(goods,limitPool,order1,isBuyOrder);
             return false;
         }
+        broadcastOrders(order1,isBuyOrder);
         return true;
     }
 
@@ -506,5 +523,55 @@ public class OrderPool {
                 break;
             }
         }
+    }
+
+    private void broadcastOrders(Order order, boolean isBuyOrder)
+    {
+        List<Order>orders = null;
+        if(isBuyOrder)
+        {
+            orders = buyOrderDao.queryMatchOrder(order.getorderID());
+        }
+        else
+        {
+            orders = sellOrderDao.queryMatchOrder(order.getorderID());
+        }
+        TransactionList transactionList = new TransactionList();
+        transactionList.setList(new ArrayList<Transactions>());
+        for (Order o:orders
+             ) {
+            Transactions transactions = new Transactions();
+            if(isBuyOrder)
+            {
+                transactions.setBuyName(order.getCompanyName());
+                transactions.setSaleName(o.getCompanyName());
+            }
+            else
+            {
+                transactions.setBuyName(o.getCompanyName());
+                transactions.setSaleName(order.getCompanyName());
+            }
+            Commodity commodity = new Commodity();
+            commodity.setName(order.getGoodsName());
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            Date date = null;
+            try {
+                date = sdf.parse(order.getGoodsDate());
+            }
+            catch (ParseException e)
+            {
+                e.printStackTrace();
+            }
+            commodity.setTime(date);
+            commodity.setNumber(o.getQuantity());//set buy table order item
+            commodity.setPrice(o.getPrice().doubleValue());//set buy table order item
+            transactions.setCommodity(commodity);
+            transactionList.getList().add(transactions);
+        }
+
+        //----------------------------need to change ----------------------------
+        brokerSender.sendMessage(destination, transactionList);
+        //----------------------------need to change ----------------------------
+
     }
 }

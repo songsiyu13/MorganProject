@@ -13,4 +13,5 @@ public interface SellOrderDao {
     public void add(Order sellOrder);
     List<Order> queryNoPendingOrder();
     int getMaxID();
+    List<Order> queryMatchOrder(int sellOrderID);
 }

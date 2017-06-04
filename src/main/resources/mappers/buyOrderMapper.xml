@@ -19,11 +19,26 @@
         <!-- <association property="" column=""></association> -->
     </resultMap>
 
-    <select id="queryNoPendingOrder" resultType="com.entity.Order">
+    <select id="queryNoPendingOrder" resultType="orderMap">
         select buyorder.buyOrderID,orderType,goodsName,goodsDate,price,buyorder.quantity,companyName from buyorder LEFT JOIN orderitem on buyorder.buyOrderID = orderitem.buyOrderID WHERE orderitem.orderItemID is NULL;
     </select>
 
     <select id="getMaxID" resultType="int">
         SELECT MAX (buyOrderID) FROM buyorder;
+    </select>
+
+    <resultMap type="com.entity.Order" id="orderMap2">
+        <id column="buyOrderID" property="orderID"/>
+        <result column="orderType" property="orderType"/>
+        <result column="goodsName" property="goodsName"/>
+        <result column="goodsDate" property="goodsDate"/>
+        <result column="finalPrice" property="price"/>
+        <result column="quantity" property="quantity"/>
+        <result column="companyName" property="companyName"/>
+        <!-- <association property="" column=""></association> -->
+    </resultMap>
+
+    <select id="queryMatchOrder" resultType="orderMap2">
+        SELECT sellOrderID,orderType,goodsName,goodsDate,finalPrice,orderItem.quantity,companyName FROM orderitem LEFT JOIN sellorder ON orderitem.sellOrderID = sellorder.sellOrderID WHERE buyOrderID = #{0};
     </select>
 </mapper>

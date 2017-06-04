@@ -26,4 +26,18 @@
     <select id="getMaxID" resultType="int">
         SELECT MAX (sellOrderID) FROM sellorder;
     </select>
+
+    <resultMap type="com.entity.Order" id="orderMap2">
+        <id column="sellOrderID" property="orderID"/>
+        <result column="orderType" property="orderType"/>
+        <result column="goodsName" property="goodsName"/>
+        <result column="goodsDate" property="goodsDate"/>
+        <result column="finalPrice" property="price"/>
+        <result column="quantity" property="quantity"/>
+        <result column="companyName" property="companyName"/>
+        <!-- <association property="" column=""></association> -->
+    </resultMap>
+    <select id="queryMatchOrder" resultType="orderMap">
+        SELECT buyOrderID,orderType,goodsName,goodsDate,finalPrice,orderitem.quantity,companyName FROM orderitem LEFT JOIN buyorder ON orderitem.buyOrderID = buyorder.buyOrderID WHERE sellOrderID = #{0};
+    </select>
 </mapper>

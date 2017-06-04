@@ -19,16 +19,16 @@ public class MarketDepth implements Serializable{
     private Date time;
     
     // Market Depth 列表
-    private List<marketCommodity> market_depth;
+    private List<MarketCommodity> marketDepth;
     
     public void setTime(Date time)
     {
         this.time = time;
     }
     
-    public void setMarket_depth(List<marketCommodity> market_depth)
+    public void setMarketDepth(List<MarketCommodity> market_depth)
     {
-        this.market_depth = market_depth;
+        this.marketDepth = market_depth;
     }
     
     public Date getTime()
@@ -36,8 +36,8 @@ public class MarketDepth implements Serializable{
         return this.time;
     }
     
-    public List<marketCommodity> getMarket_depth()
+    public List<MarketCommodity> getMarketDepth()
     {
-        return this.market_depth;
+        return this.marketDepth;
     }
 }
