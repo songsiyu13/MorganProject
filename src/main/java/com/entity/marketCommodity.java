@@ -6,36 +6,24 @@
 package com.entity;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  *
  * @author lycronaldo
  */
 public class MarketCommodity implements Serializable{
+    //价格
+    private BigDecimal price;
+    //数量
+    private int quantity;
     
-    // 商品类
-    private Commodity commodity;
-    
-    // 来源方:false为买方, true为卖方
-    private boolean type;
-    
-    public void setCommodity(Commodity commodity)
-    {
-        this.commodity = commodity;
-    }
+    public void setPrice(BigDecimal price){this.price = price;}
 
-    public void setType(boolean type)
-    {
-        this.type = type;
-    }
-    
-    public Commodity getCommodity()
-    {
-        return this.commodity;
-    }
+    public void setQuantity(int quantity){this.quantity = quantity;}
 
-    public boolean getType()
-    {
-        return this.type;
-    }
+    public BigDecimal getPrice(){return price;}
+
+    public int getQuantity(){return quantity;}
 }

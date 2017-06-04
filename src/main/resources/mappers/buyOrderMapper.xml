@@ -19,7 +19,7 @@
         <!-- <association property="" column=""></association> -->
     </resultMap>
 
-    <select id="queryNoPendingOrder" resultType="orderMap">
+    <select id="queryNoPendingOrder" resultMap="orderMap">
         select buyorder.buyOrderID,orderType,goodsName,goodsDate,price,buyorder.quantity,companyName from buyorder LEFT JOIN orderitem on buyorder.buyOrderID = orderitem.buyOrderID WHERE orderitem.orderItemID is NULL;
     </select>
 
@@ -38,7 +38,7 @@
         <!-- <association property="" column=""></association> -->
     </resultMap>
 
-    <select id="queryMatchOrder" resultType="orderMap2">
-        SELECT sellOrderID,orderType,goodsName,goodsDate,finalPrice,orderItem.quantity,companyName FROM orderitem LEFT JOIN sellorder ON orderitem.sellOrderID = sellorder.sellOrderID WHERE buyOrderID = #{0};
+    <select id="queryMatchOrder" resultMap="orderMap2">
+        SELECT sellOrderID,orderType,goodsName,goodsDate,finalPrice,sellorder.quantity,companyName FROM orderitem LEFT JOIN sellorder ON orderitem.sellOrderID = sellorder.sellOrderID WHERE buyOrderID = #{0};
     </select>
 </mapper>

@@ -17,27 +17,45 @@ public class MarketDepth implements Serializable{
     
     // Market Depth的时间
     private Date time;
+
+    private String goodsName;
+
+    private Date goodsTime;
     
     // Market Depth 列表
-    private List<MarketCommodity> marketDepth;
+    private List<MarketCommodity> buyMarketDepth;
+
+    private List<MarketCommodity> sellMarketDepth;
     
     public void setTime(Date time)
     {
         this.time = time;
     }
+
+    public void setGoodsName(String name){goodsName = name;}
+
+    public void setGoodsTime(Date date){goodsTime = date;}
     
-    public void setMarketDepth(List<MarketCommodity> market_depth)
+    public void setBuyMarketDepth(List<MarketCommodity> market_depth)
     {
-        this.marketDepth = market_depth;
+        this.buyMarketDepth = market_depth;
     }
+
+    public void setSellMarketDepth(List<MarketCommodity> sellMarketDepth){this.sellMarketDepth = sellMarketDepth;}
     
     public Date getTime()
     {
         return this.time;
     }
+
+    public String getGoodsName(){return this.goodsName;}
+
+    public Date getGoodsTime(){return this.goodsTime;}
     
-    public List<MarketCommodity> getMarketDepth()
+    public List<MarketCommodity> getBuyMarketDepth()
     {
-        return this.marketDepth;
+        return this.buyMarketDepth;
     }
+
+    public List<MarketCommodity> getSellMarketDepth() { return this.sellMarketDepth;}
 }

@@ -23,13 +23,13 @@ public class Order {
     {
         orderType = orderMessage.getType();
         goodsName = orderMessage.getCommodity().getName();
-        goodsDate = (new SimpleDateFormat("yyyy-MM-dd")).format(orderMessage.getCommodity().getTime());
+        goodsDate = (new SimpleDateFormat("yyyy-MM")).format(orderMessage.getCommodity().getTime());
         price =  new BigDecimal(orderMessage.getCommodity().getPrice());
         quantity = orderMessage.getCommodity().getNumber();
         companyName = orderMessage.getCompany_name();
     }
 
-    public int getorderID(){return orderID;}
+    public int getOrderID(){return orderID;}
     public int getOrderType(){return orderType;}
     public String getGoodsName(){return goodsName;}
     public String getGoodsDate(){return goodsDate;}

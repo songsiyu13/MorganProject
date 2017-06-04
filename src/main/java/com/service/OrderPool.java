@@ -5,6 +5,7 @@ import com.dao.OrderItemDao;
 import com.dao.SellOrderDao;
 import com.entity.*;
 import com.producer.BrokerSender;
+import com.sun.org.apache.xpath.internal.operations.Or;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -68,6 +69,7 @@ public class OrderPool {
             }
             goodOrderPool.put(order.getPrice(),new LinkedList<Order>());
             goodOrderPool.get(order.getPrice()).add(order);
+            limitPool.put(goods,goodOrderPool);
         }
     }
     //some methods to process limitOrder
@@ -233,23 +235,22 @@ public class OrderPool {
             {
                 break;
             }
-            else
-            {
-                    /*
-                     *  code to let trader know
-                     */
-            }
         }
     }
 
     public void newBuyOrder(Order buyOrder,int type, int traderID)
     {
-        buyOrderDao.add(buyOrder);
+        if(type == 3) {
+            processCancelOrder(buyOrder, buyLimitOrderPool, buyMarketOrderPool, buyStopOrderPool);
+            return;
+        }
+
+            buyOrderDao.add(buyOrder);
         buyOrder.setorderID(buyOrderDao.getMaxID());
 
         //---------------------send Message--------------------------
         OrderAcknowledge orderAcknowledge = new OrderAcknowledge();
-        orderAcknowledge.setBrokerId(buyOrder.getorderID());
+        orderAcknowledge.setBrokerId(buyOrder.getOrderID());
         orderAcknowledge.setBrokerId(traderID);
         brokerSender.sendMessage(destination,orderAcknowledge);
         //---------------------send Message--------------------------
@@ -288,21 +289,24 @@ public class OrderPool {
                 }
                 break;
             }
-            case 3:
-            {
-                //stop order
-            }
         }
+        broadcastMarketDepth(buyOrder);
     }
 
     public void newSellOrder(Order sellOrder,int type, int traderID)
     {
+        if(type == 3)
+        {
+            processCancelOrder(sellOrder,sellLimitOrderPool,sellMarketOrderPool,sellStopOrderPool);
+            return;
+        }
+        
         sellOrderDao.add(sellOrder);
         sellOrder.setorderID(sellOrderDao.getMaxID());
 
         //---------------------send Message--------------------------
         OrderAcknowledge orderAcknowledge = new OrderAcknowledge();
-        orderAcknowledge.setBrokerId(sellOrder.getorderID());
+        orderAcknowledge.setBrokerId(sellOrder.getOrderID());
         orderAcknowledge.setBrokerId(traderID);
         brokerSender.sendMessage(destination,orderAcknowledge);
         //---------------------send Message--------------------------
@@ -347,6 +351,7 @@ public class OrderPool {
                 //stop order
             }
         }
+        broadcastMarketDepth(sellOrder);
     }
 
     /*
@@ -384,13 +389,13 @@ public class OrderPool {
                 OrderItem orderItem = new OrderItem();
                 if (isBuyOrder)
                 {
-                    orderItem.setBuyOrderID(order1.getorderID());
-                    orderItem.setSellOrderID(order2.getorderID());
+                    orderItem.setBuyOrderID(order1.getOrderID());
+                    orderItem.setSellOrderID(order2.getOrderID());
                 }
                 else
                 {
-                    orderItem.setBuyOrderID(order2.getorderID());
-                    orderItem.setSellOrderID(order1.getorderID());
+                    orderItem.setBuyOrderID(order2.getOrderID());
+                    orderItem.setSellOrderID(order1.getOrderID());
                 }
                 orderItem.setFinalPrice(order2.getPrice());
                 int quantity = Math.min(order1.getQuantity(),order2.getQuantity());
@@ -459,13 +464,13 @@ public class OrderPool {
                 OrderItem orderItem = new OrderItem();
                 if (isBuyOrder)
                 {
-                    orderItem.setBuyOrderID(order1.getorderID());
-                    orderItem.setSellOrderID(order2.getorderID());
+                    orderItem.setBuyOrderID(order1.getOrderID());
+                    orderItem.setSellOrderID(order2.getOrderID());
                 }
                 else
                 {
-                    orderItem.setBuyOrderID(order2.getorderID());
-                    orderItem.setSellOrderID(order1.getorderID());
+                    orderItem.setBuyOrderID(order2.getOrderID());
+                    orderItem.setSellOrderID(order1.getOrderID());
                 }
                 orderItem.setFinalPrice(order2.getPrice().add(order1.getPrice()).divide(new BigDecimal(2)));
                 int quantity = Math.min(order1.getQuantity(),order2.getQuantity());
@@ -525,16 +530,54 @@ public class OrderPool {
         }
     }
 
+    private void processCancelOrder(Order order1, Map<String,Map<BigDecimal,List<Order>>>limitPool,Map<String,List<Order>> marketPool,Map<String,PriorityQueue<Order>> stopOrderPool)
+    {
+        String goods = order1.getGoodsName().concat(order1.getGoodsDate());
+        Map<BigDecimal,List<Order>> limitOrders = limitPool.get(goods);
+        List<Order>marketOrders = marketPool.get(goods);
+        PriorityQueue<Order> stopOrders = stopOrderPool.get(goods);
+
+        for (Order o:marketOrders
+             ) {
+            if(o.getOrderID() == order1.getOrderID())
+            {
+                marketOrders.remove(o);
+                return;
+            }
+        }
+
+        for (BigDecimal key:limitOrders.keySet()
+             ) {
+            for (Order o:limitOrders.get(key)
+                 ) {
+                if(o.getOrderID() == order1.getOrderID())
+                {
+                    marketOrders.remove(o);
+                    return;
+                }
+            }
+        }
+
+        for (Order o:stopOrders
+             ) {
+            if(o.getOrderID() == order1.getOrderID())
+            {
+                marketOrders.remove(o);
+                return;
+            }
+        }
+    }
+
     private void broadcastOrders(Order order, boolean isBuyOrder)
     {
         List<Order>orders = null;
         if(isBuyOrder)
         {
-            orders = buyOrderDao.queryMatchOrder(order.getorderID());
+            orders = buyOrderDao.queryMatchOrder(order.getOrderID());
         }
         else
         {
-            orders = sellOrderDao.queryMatchOrder(order.getorderID());
+            orders = sellOrderDao.queryMatchOrder(order.getOrderID());
         }
         TransactionList transactionList = new TransactionList();
         transactionList.setList(new ArrayList<Transactions>());
@@ -553,7 +596,7 @@ public class OrderPool {
             }
             Commodity commodity = new Commodity();
             commodity.setName(order.getGoodsName());
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
             Date date = null;
             try {
                 date = sdf.parse(order.getGoodsDate());
@@ -573,5 +616,68 @@ public class OrderPool {
         brokerSender.sendMessage(destination, transactionList);
         //----------------------------need to change ----------------------------
 
+    }
+
+    private void broadcastMarketDepth(Order order)
+    {
+
+        brokerSender.sendMessage(destination,getMarketDepth(order));
+    }
+
+    public MarketDepth getMarketDepth(Order order)
+    {
+        String goods = order.getGoodsName().concat(order.getGoodsDate());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+        Date date = null;
+        try {
+            date = sdf.parse(order.getGoodsDate());
+        }
+        catch (ParseException e)
+        {
+            e.printStackTrace();
+        }
+        MarketDepth marketDepth = new MarketDepth();
+        marketDepth.setTime(new Date());
+        marketDepth.setGoodsName(order.getGoodsName());
+        marketDepth.setGoodsTime(date);
+        marketDepth.setBuyMarketDepth(new LinkedList<MarketCommodity>());
+        if(buyLimitOrderPool.get(goods) != null)
+        {
+            for (BigDecimal key : buyLimitOrderPool.get(goods).keySet()
+                    ) {
+                int quantity = 0;
+                for (Order o:buyLimitOrderPool.get(goods).get(key)
+                        ) {
+                    quantity += o.getQuantity();
+                }
+                if(quantity != 0)
+                {
+                    MarketCommodity marketCommodity = new MarketCommodity();
+                    marketCommodity.setPrice(key);
+                    marketCommodity.setQuantity(quantity);
+                    marketDepth.getBuyMarketDepth().add(marketCommodity);
+                }
+            }
+        }
+        marketDepth.setSellMarketDepth(new LinkedList<MarketCommodity>());
+        if(sellLimitOrderPool.get(goods) != null)
+        {
+            for (BigDecimal key : sellLimitOrderPool.get(goods).keySet()
+                    ) {
+                int quantity = 0;
+                for (Order o:sellLimitOrderPool.get(goods).get(key)
+                        ) {
+                    quantity += o.getQuantity();
+                }
+                if(quantity != 0)
+                {
+                    MarketCommodity marketCommodity = new MarketCommodity();
+                    marketCommodity.setPrice(key);
+                    marketCommodity.setQuantity(quantity);
+                    marketDepth.getSellMarketDepth().add(marketCommodity);
+                }
+            }
+        }
+        return marketDepth;
     }
 }
