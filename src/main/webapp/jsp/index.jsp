@@ -7,6 +7,11 @@
 <body>
 <div class="container-fluid">
     <div class="row">
+        <div class="col-md-12">
+            <h3 class="text-center text-primary">Welcome to broker UI</h3>
+        </div>
+    </div>
+    <div class="row">
         <div class="col-md-6">
             <form class="form-inline" action="/marketDepth">
                 <div class="form-group">

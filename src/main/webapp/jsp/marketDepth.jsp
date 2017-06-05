@@ -43,7 +43,7 @@
                     maxBuy = marketCommodity.getPrice();
                 }
             }
-            if(marketDepth.getSellMarketDepth() !=null || marketDepth.getSellMarketDepth().size() != 0)
+            if(marketDepth.getSellMarketDepth() !=null && marketDepth.getSellMarketDepth().size() != 0)
             {
                 minSell = marketDepth.getSellMarketDepth().get(0).getPrice();
                 if(maxBuy != null)
